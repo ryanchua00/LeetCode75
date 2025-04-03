@@ -1,55 +1,18 @@
 class Solution:
     def minDistance(self, word1: str, word2: str) -> int:
-        dp = {}
+        cache = [[float("inf")] * (len(word2)+1) for i in range(len(word1)+1)]
 
-        def dfs(index1, index2):
-            if index1 == index2:
-                return 0
-            elif index2 >= len(word2) or index1 >= len(word1):
-                return 101
-            if (index1, index2) in dp:
-                return dp[(index1, index2)]
+        for j in range(len(word2) + 1):
+            cache[len(word1)][j] = len(word2)-j
+        for i in range(len(word1) + 1):
+            cache[i][len(word2)] = len(word1)-i
 
-            if word1[index1] == word2[index2]:
-                dp[(index1, index2)] = dfs(index1+1, index2+1)
-            else:
-                # insertion
-                insertCost = dfs(
-                    index1, index2+1) + 1
-                # deletion
-                deleteCost = dfs(
-                    index1, index2+1) + 1
-                # replace
-                replaceCost = dfs(
-                    index1+1, index2+1) + 1
+        for i in range(len(word1)-1, -1, -1):
+            for j in range(len(word2)-1, -1, -1):
+                if word1[i] == word2[j]:
+                    cache[i][j] = cache[i+1][j+1]
+                else:
+                    cache[i][j] = 1 + \
+                        min(cache[i+1][j], cache[i][j+1], cache[i+1][j+1])
 
-                dp[((index1, index2))] = min(
-                    insertCost, replaceCost, deleteCost)
-
-            return dp[(index1, index2)]
-
-        return dfs(0, 0, word1)
-
-
-'''
-Input: word1 = "neatcdee", word2 = "neetcode"
-                  ^  ^^
-Output: 3
-
-dp[currString]
-
-                n
-                |
-                e
-                |
-                a
-               /|\
-              e e aX 1
-           replace: neetcdee
-           delete: netcdee -> neetcdee + 1
-           insert: neeatcdee
-
-
-
-
-'''
+        return cache[0][0]
